@@ -3,3 +3,4 @@ data
 .codex
 .openclaude-profile.json
 poetry.lock
+.vscode
