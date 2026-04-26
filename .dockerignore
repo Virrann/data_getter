@@ -1,0 +1,9 @@
+poetry.lock
+__pycache__/
+*.pyc
+.git
+data/cache/*
+.venv
+.vscode
+notebooks
+.openclaude-profile.json

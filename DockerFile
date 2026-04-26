@@ -1,0 +1,29 @@
+FROM python:3.14-slim
+
+ENV POETRY_VERSION=2.2.1 \
+    POETRY_VIRTUALENVS_CREATE=false \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl git \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install "poetry==$POETRY_VERSION"
+
+# Copia só o pyproject
+COPY pyproject.toml ./
+COPY .env ./
+COPY entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+# Poetry resolve dependências aqui (sem lock)
+RUN poetry install --no-root
+
+# Não copia src nem data — vamos montar via volume
+
+EXPOSE 8888
+
+CMD ["/entrypoint.sh"]
