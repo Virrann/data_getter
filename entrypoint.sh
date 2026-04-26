@@ -2,7 +2,7 @@
 
 echo "🚀 Starting Jupyter..."
 
-jupyter nbclassic \
+jupyter lab \
   --ip=0.0.0.0 \
   --port="${JUPYTHER_PORT:-8888}"\
   --no-browser \
