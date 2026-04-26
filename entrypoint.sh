@@ -2,9 +2,9 @@
 
 echo "🚀 Starting Jupyter..."
 
-jupyter lab \
+jupyter nbclassic \
   --ip=0.0.0.0 \
-  --port=8888 \
+  --port="${JUPYTHER_PORT:-8888}"\
   --no-browser \
   --allow-root \
   --NotebookApp.token='' &
