@@ -1,1 +1,0 @@
-# Fraud assessment in SENASP data
