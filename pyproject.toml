@@ -1,5 +1,5 @@
 [project]
-name = "datascienceclass"
+name = "cyberchase"
 version = "0.1.0"
 description = ""
 authors = [
@@ -24,7 +24,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "datascienceclass", from = "src"}]
+packages = [{include = "cyberchase", from = "src"}]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

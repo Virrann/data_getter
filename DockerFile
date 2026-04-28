@@ -13,17 +13,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install "poetry==$POETRY_VERSION"
 
-# Copia só o pyproject
 COPY pyproject.toml ./
 COPY .env ./
 COPY entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
-# Poetry resolve dependências aqui (sem lock)
 RUN poetry install --no-root
-
-# Não copia src nem data — vamos montar via volume
 
 EXPOSE 8888
 
