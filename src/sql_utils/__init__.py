@@ -5,7 +5,9 @@ from .insert import (
     upload_dataframe_to_postgres,
 )
 from .reed import print_table_head
-from .utils import build_postgres_engine
+from .utils import (
+    build_postgres_engine,
+    normalize_column_name)
 
 __all__ = [
     "build_postgres_engine",
@@ -14,4 +16,5 @@ __all__ = [
     "pandas_dtype_to_sqlalchemy",
     "print_table_head",
     "upload_dataframe_to_postgres",
+    "normalize_column_name",
 ]
