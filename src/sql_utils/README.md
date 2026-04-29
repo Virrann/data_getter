@@ -11,6 +11,7 @@ from sql_utils import (
     create_table_from_dataframe,
     drop_table,
     pandas_dtype_to_sqlalchemy,
+    print_table_head,
     upload_dataframe_to_postgres,
 )
 ```
@@ -85,6 +86,10 @@ Cria o schema caso necessário e cria/verifica a tabela com base nas colunas do 
 ### `upload_dataframe_to_postgres`
 
 Insere o DataFrame no PostgreSQL em chunks usando `COPY`. É idempotente para os `id`s enviados, pois remove os registros equivalentes antes de reinserir.
+
+### `print_table_head`
+
+Imprime as primeiras linhas de uma tabela em um schema e retorna o DataFrame consultado.
 
 ### `drop_table`
 
