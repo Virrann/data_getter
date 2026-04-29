@@ -1,7 +1,7 @@
 import pandas as pd
 from sqlalchemy import Engine, text
 
-
+# Gerado pelo codex
 def print_table_head(
     engine: Engine,
     schema_name: str,
