@@ -57,7 +57,7 @@ Recebe um DataFrame da planilha SENASP e prepara os dados para carga:
 - converte colunas numéricas como `feminino`, `masculino`, `nao_informado` e `total_vitima` para inteiro;
 - troca valores ausentes dessas colunas por zero.
 
-### `senasp.dowload_full_db`
+### `senasp.download_full_db`
 
 Baixa, ajusta e insere uma lista de anos da base SENASP no PostgreSQL.
 
@@ -69,7 +69,7 @@ years = [2025, 2024, 2023]
 url = "https://www.gov.br/mj/pt-br/assuntos/sua-seguranca/seguranca-publica/estatistica/download/dnsp-base-de-dados/bancovde-{y}.xlsx/@@download/file"
 download_path = Path("data/cache")
 
-failed_years = senasp.dowload_full_db(
+failed_years = senasp.download_full_db(
     url=url,
     years=years,
     download_dir=download_path,
@@ -92,7 +92,7 @@ O host usado atualmente é `localhost`.
 
 ### `senasp.loop_download`
 
-Executa `dowload_full_db` e repete automaticamente apenas para os anos que falharem.
+Executa `download_full_db` e repete automaticamente apenas para os anos que falharem.
 
 ```python
 senasp.loop_download(
