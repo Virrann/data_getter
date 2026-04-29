@@ -178,7 +178,7 @@ def loop_download(
     )
 
     while years_with_download_error:
-        print(f"tentando novamente para {years_with_download_error}")
+        print(f"trying again for {years_with_download_error}")
         years_with_download_error = download_full_db(
             url,
             years_with_download_error,

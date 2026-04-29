@@ -130,7 +130,7 @@ def loop_download(
     )
 
     while periods_with_download_error:
-        print(f"tentando novamente para {periods_with_download_error}")
+        print(f"trying again for {periods_with_download_error}")
         periods_with_download_error = download_full_db(
             url,
             periods_with_download_error,

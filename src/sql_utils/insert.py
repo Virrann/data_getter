@@ -77,7 +77,7 @@ def create_table_from_dataframe(
     """
 
     if "id_tabela" not in dataframe.columns:
-        raise KeyError("O dataframe precisa ter a coluna 'id_tabela'.")
+        raise KeyError("The dataframe must contain the 'id_tabela' column.")
 
     columns: list[Column[Any]] = [Column("id", String, primary_key=True)]
 
@@ -136,9 +136,10 @@ def upload_dataframe_to_postgres(
     """
 
     if "id_tabela" not in dataframe.columns:
-        raise KeyError("O dataframe precisa ter a coluna 'id_tabela'.")
+        raise KeyError("The dataframe must contain the 'id_tabela' column.")
+
     if dataframe["id_tabela"].isna().any():
-        raise ValueError("A coluna 'id_tabela' não pode ter valores nulos.")
+        raise ValueError("The 'id_tabela' column cannot contain null values.")
 
     frame = dataframe.copy()
     id_series = frame["id_tabela"].astype("string").str.replace(r"\.0+$", "", regex=True)
@@ -146,7 +147,7 @@ def upload_dataframe_to_postgres(
     frame = frame.drop(columns=["id_tabela"])
 
     if chunk_size <= 0:
-        raise ValueError("chunk_size precisa ser maior que zero.")
+        raise ValueError("chunk_size must be greater than zero.")
 
     columns = ", ".join(f'"{column}"' for column in frame.columns)
     copy_sql = f"COPY \"{schema_name}\".\"{table_name}\" ({columns}) FROM STDIN WITH (FORMAT CSV, NULL '\\N')"
