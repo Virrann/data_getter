@@ -9,7 +9,8 @@ def download_sheet_from_url(
         std_name: str,
         ext:str | None
     ) -> Path:
-    """Baixa uma planilha parametrizada por ano e salva no diretório de cache.
+    """
+    Baixa uma planilha parametrizada por ano e salva no diretório de cache.
 
     A URL deve conter o placeholder ``{y}``, que é substituído pelo ano informado.
     O arquivo é salvo em ``download_dir/std_name/std_name-year.ext`` e o caminho

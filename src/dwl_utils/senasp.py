@@ -13,7 +13,8 @@ except ImportError:
 from sql_utils import upload_dataframe_to_postgres, build_postgres_engine, create_table_from_dataframe
 
 def table_ajust(db: pd.DataFrame):
-    """Padroniza a base SENASP antes de inserir no PostgreSQL.
+    """
+    Padroniza a base SENASP antes de inserir no PostgreSQL.
 
     A função cria a coluna ``id_tabela`` a partir do ano de ``data_referencia``
     concatenado com o número sequencial da linha. Também move ``id_tabela`` para
@@ -72,7 +73,8 @@ def dowload_full_db(
     schema_name:str,
     table_name:str,
     chunck_size: int = 50_000):
-    """Baixa, ajusta e carrega bases SENASP no PostgreSQL.
+    """
+    Baixa, ajusta e carrega bases SENASP no PostgreSQL.
 
     Para o primeiro ano da lista, a função baixa a planilha e usa sua estrutura
     para criar/verificar a tabela de destino. Em seguida percorre todos os anos,
@@ -151,7 +153,8 @@ def loop_download(
     schema_name: str,
     table_name: str,
 ) -> None:
-    """Repete a carga SENASP até todos os anos baixarem com sucesso.
+    """
+    Repete a carga SENASP até todos os anos baixarem com sucesso.
 
     A função chama ``dowload_full_db`` e, enquanto ela retornar uma lista não
     vazia, executa novamente apenas para os anos que falharam no download,

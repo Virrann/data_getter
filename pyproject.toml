@@ -24,6 +24,7 @@ dependencies = [
 ]
 
 [tool.poetry]
+package-mode = false  
 packages = [{include = "cyberchase", from = "src"}]
 
 [build-system]

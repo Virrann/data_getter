@@ -1,4 +1,5 @@
 from io import StringIO
+from typing import Any
 
 import pandas as pd
 from tqdm import tqdm
@@ -22,7 +23,8 @@ from sqlalchemy.schema import CreateSchema
 
 
 def build_postgres_engine(host: str, port: int, database: str, user: str, password: str):
-    """Cria uma engine SQLAlchemy para conexão com PostgreSQL via psycopg2.
+    """
+    Cria uma engine SQLAlchemy para conexão com PostgreSQL via psycopg2.
 
     Args:
         host: Host do servidor PostgreSQL.
@@ -48,7 +50,8 @@ def build_postgres_engine(host: str, port: int, database: str, user: str, passwo
 
 
 def pandas_dtype_to_sqlalchemy(dtype):
-    """Converte um dtype do pandas para um tipo básico do SQLAlchemy.
+    """
+    Converte um dtype do pandas para um tipo básico do SQLAlchemy.
 
     A função cobre os tipos usados na criação automática de tabelas a partir de
     DataFrames. Tipos não reconhecidos são tratados como texto.
@@ -78,7 +81,8 @@ def create_table_from_dataframe(
     schema_name: str,
     table_name: str,
 ) -> Table:
-    """Cria uma tabela PostgreSQL a partir das colunas de um DataFrame.
+    """
+    Cria uma tabela PostgreSQL a partir das colunas de um DataFrame.
 
     O DataFrame precisa conter a coluna ``id_tabela``. Ela é usada como origem
     lógica do identificador, mas a tabela criada recebe uma coluna primária
@@ -102,7 +106,7 @@ def create_table_from_dataframe(
     if "id_tabela" not in dataframe.columns:
         raise KeyError("O dataframe precisa ter a coluna 'id_tabela'.")
 
-    columns = [Column("id", String, primary_key=True)]
+    columns: list[Column[Any]] = [Column("id", String, primary_key=True)]
 
     for column_name, dtype in dataframe.dtypes.items():
 
@@ -135,7 +139,8 @@ def upload_dataframe_to_postgres(
     table_name: str,
     chunk_size: int = 50_000,
 ) -> int:
-    """Insere um DataFrame no PostgreSQL em chunks usando COPY.
+    """
+    Insere um DataFrame no PostgreSQL em chunks usando COPY.
 
     A coluna ``id_tabela`` é convertida para a chave primária ``id`` antes da
     carga. Para permitir reexecuções do notebook, cada chunk remove previamente
@@ -177,39 +182,41 @@ def upload_dataframe_to_postgres(
     inserted_rows = 0
 
     raw_connection = engine.raw_connection()
+    cursor = raw_connection.cursor()
     try:
-        with raw_connection.cursor() as cursor:
-            progress_bar = tqdm(
-                range(0, total_rows, chunk_size),
-                total=(total_rows + chunk_size - 1) // chunk_size,
-                desc=f"Inserindo {schema_name}.{table_name}",
-                unit="chunk",
-                ncols=120,
-                bar_format="{l_bar}{bar:50}{r_bar}",
-            )
+        progress_bar = tqdm(
+            range(0, total_rows, chunk_size),
+            total=(total_rows + chunk_size - 1) // chunk_size,
+            desc=f"Inserindo {schema_name}.{table_name}",
+            unit="chunk",
+            ncols=120,
+            bar_format="{l_bar}{bar:50}{r_bar}",
+        )
 
-            for start in progress_bar:
-                chunk = frame.iloc[start:start + chunk_size]
-                buffer = StringIO()
-                chunk.to_csv(buffer, index=False, header=False, na_rep="\\N")
-                buffer.seek(0)
+        for start in progress_bar:
+            chunk = frame.iloc[start:start + chunk_size]
+            buffer = StringIO()
+            chunk.to_csv(buffer, index=False, header=False, na_rep="\\N")
+            buffer.seek(0)
 
-                cursor.execute(delete_sql, (chunk["id"].tolist(),))
-                cursor.copy_expert(copy_sql, buffer)
-                inserted_rows += len(chunk)
-                progress_bar.set_postfix(linhas=inserted_rows)
+            cursor.execute(delete_sql, (chunk["id"].tolist(),))
+            cursor.copy_expert(copy_sql, buffer)
+            inserted_rows += len(chunk)
+            progress_bar.set_postfix(linhas=inserted_rows)
 
         raw_connection.commit()
     except Exception:
         raw_connection.rollback()
         raise
     finally:
+        cursor.close()
         raw_connection.close()
 
     return inserted_rows
 
 def drop_table(schema_name: str, table_name: str, engine: Engine) -> None:
-    """Remove uma tabela PostgreSQL caso ela exista.
+    """
+    Remove uma tabela PostgreSQL caso ela exista.
 
     Args:
         schema_name: Schema onde a tabela está localizada.
