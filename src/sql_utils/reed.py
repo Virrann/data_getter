@@ -7,7 +7,7 @@ def print_table_head(
     schema_name: str,
     table_name: str,
     rows: int = 5,
-) -> pd.DataFrame:
+) -> None:
     """
     Imprime as primeiras linhas de uma tabela PostgreSQL em um schema.
 
@@ -39,4 +39,4 @@ def print_table_head(
         dataframe = pd.read_sql_query(query, connection, params={"rows": rows})
 
     print(dataframe.to_string(index=False))
-    return dataframe
+    #return dataframe
