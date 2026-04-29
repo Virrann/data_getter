@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from sqlalchemy import MetaData
+from sqlalchemy import Engine, MetaData
 
 try:
     from .dwl import download_sheet_from_url
@@ -72,18 +72,15 @@ def dowload_full_db(
     download_dir: str | Path,
     schema_name:str,
     table_name:str,
-    chunck_size: int = 50_000):
+    engine: Engine,
+    chunck_size: int = 50_000,
+) -> list[int]:
     """
     Baixa, ajusta e carrega bases SENASP no PostgreSQL.
 
-    Para o primeiro ano da lista, a função baixa a planilha e usa sua estrutura
-    para criar/verificar a tabela de destino. Em seguida percorre todos os anos,
-    baixa cada arquivo, aplica ``table_ajust`` e insere os dados no PostgreSQL
-    usando ``upload_dataframe_to_postgres``.
-
-    As credenciais do banco são lidas do ambiente: ``POSTGRES_PORT``,
-    ``POSTGRES_DB``, ``POSTGRES_USER`` e ``POSTGRES_PASSWORD``. O host usado é
-    ``localhost``.
+    A função percorre os anos informados, baixa cada arquivo, aplica
+    ``table_ajust`` e insere os dados no PostgreSQL usando
+    ``upload_dataframe_to_postgres``.
 
     Args:
         url: URL com placeholder ``{y}`` para o ano da base.
@@ -91,32 +88,15 @@ def dowload_full_db(
         download_dir: Diretório base para salvar os arquivos baixados.
         schema_name: Schema PostgreSQL de destino.
         table_name: Nome da tabela e prefixo dos arquivos baixados.
+        engine: Engine SQLAlchemy conectada ao PostgreSQL.
         chunck_size: Quantidade de linhas por chunk na carga para o banco.
 
     Returns:
         Lista de anos que falharam durante download, leitura ou ajuste.
     """
 
-    engine = build_postgres_engine(
-        "localhost", 
-        int(os.environ.get("POSTGRES_PORT", 5432)), 
-        os.environ["POSTGRES_DB"], 
-        os.environ["POSTGRES_USER"], 
-        os.environ["POSTGRES_PASSWORD"]
-    )
-    metadata = MetaData(schema=schema_name)
-    years_with_download_error = []
+    years_with_download_error: list[int] = []
 
-    try:
-        path = download_sheet_from_url(url, years[0], download_dir, table_name, "xlsx")
-        db = pd.read_excel(path)
-        db = table_ajust(db)
-
-        create_table_from_dataframe(db, engine, metadata, schema_name, table_name)
-
-    except Exception as e:
-        print(f"error during table creation/verification: {e}")
-    
     for y in years:
         try:
             print(f"Start dowload: {y} data")
@@ -168,12 +148,31 @@ def loop_download(
         table_name: Nome da tabela e prefixo dos arquivos baixados.
     """
 
+    engine = build_postgres_engine(
+        "localhost",
+        int(os.environ.get("POSTGRES_PORT", 5432)),
+        os.environ["POSTGRES_DB"],
+        os.environ["POSTGRES_USER"],
+        os.environ["POSTGRES_PASSWORD"]
+    )
+    metadata = MetaData(schema=schema_name)
+
+    try:
+        path = download_sheet_from_url(url, years[0], download_dir, table_name, "xlsx")
+        db = pd.read_excel(path)
+        db = table_ajust(db)
+        create_table_from_dataframe(db, engine, metadata, schema_name, table_name)
+
+    except:
+        raise
+
     years_with_download_error = dowload_full_db(
         url,
         years,
         download_dir,
         schema_name,
         table_name,
+        engine,
     )
 
     while years_with_download_error:
@@ -184,4 +183,5 @@ def loop_download(
             download_dir,
             schema_name,
             table_name,
+            engine,
         )
