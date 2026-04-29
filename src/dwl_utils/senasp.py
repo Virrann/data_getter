@@ -66,7 +66,7 @@ def table_ajust(db: pd.DataFrame):
 
 
 
-def dowload_full_db(
+def download_full_db(
     url:str,
     years:list[int],
     download_dir: str | Path,
@@ -132,11 +132,12 @@ def loop_download(
     download_dir: str | Path,
     schema_name: str,
     table_name: str,
+    chunck_size: int = 50_000
 ) -> None:
     """
     Repete a carga SENASP até todos os anos baixarem com sucesso.
 
-    A função chama ``dowload_full_db`` e, enquanto ela retornar uma lista não
+    A função chama ``download_full_db`` e, enquanto ela retornar uma lista não
     vazia, executa novamente apenas para os anos que falharam no download,
     leitura ou ajuste.
 
@@ -166,22 +167,24 @@ def loop_download(
     except:
         raise
 
-    years_with_download_error = dowload_full_db(
+    years_with_download_error = download_full_db(
         url,
         years,
         download_dir,
         schema_name,
         table_name,
         engine,
+        chunck_size
     )
 
     while years_with_download_error:
         print(f"tentando novamente para {years_with_download_error}")
-        years_with_download_error = dowload_full_db(
+        years_with_download_error = download_full_db(
             url,
             years_with_download_error,
             download_dir,
             schema_name,
             table_name,
             engine,
+            chunck_size
         )
