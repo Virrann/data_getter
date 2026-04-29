@@ -92,7 +92,7 @@ def create_table_from_dataframe(
             Column(
                 column_name,
                 pandas_dtype_to_sqlalchemy(dtype),
-                nullable=bool(dataframe[column_name].isna().any()),
+                nullable=True#bool(dataframe[column_name].isna().any()),
             )
         )
 
