@@ -6,8 +6,23 @@ from sqlalchemy import Engine, MetaData
 from dwl_utils import download_sheet_from_url
 from sql_utils import upload_dataframe_to_postgres, create_table_from_dataframe
 
-# função feita pelo codex
 def read_age_range_ibge_table(table_path: Path, age_range: str) -> pd.DataFrame:
+    """
+    Lê uma planilha de distribuição etária do IBGE/SIDRA.
+
+    A função ignora as linhas de cabeçalho geradas pela exportação em Excel,
+    padroniza as colunas usadas no projeto, remove linhas vazias ou de fonte e
+    adiciona a faixa etária correspondente ao arquivo lido.
+
+    Args:
+        table_path: Caminho da planilha Excel baixada.
+        age_range: Faixa etária representada pela planilha.
+
+    Returns:
+        DataFrame com código/nome do território, tipo de declaração de idade,
+        população total, homens, mulheres e a faixa etária.
+    """
+
     table = pd.read_excel(
         table_path,
         header=None,
@@ -30,8 +45,24 @@ def read_age_range_ibge_table(table_path: Path, age_range: str) -> pd.DataFrame:
 
     return table
 
-# função feita pelo codex
-def table_ajust(dfs: list[pd.DataFrame]):
+def table_ajust(dfs: list[pd.DataFrame]) -> pd.DataFrame:
+    """
+    Consolida planilhas de faixas etárias em uma tabela final larga.
+
+    Cada DataFrame de entrada representa uma faixa etária. A função transforma
+    as colunas de população total, homens e mulheres em linhas da coluna
+    ``populacao`` e usa as faixas etárias como colunas finais. Também cria
+    ``id_tabela`` a partir de ``cod_territorio`` e de um código interno de
+    população: homens = 1, mulheres = 2 e total = 3.
+
+    Args:
+        dfs: Lista de DataFrames retornados por ``read_age_range_ibge_table``.
+
+    Returns:
+        DataFrame consolidado com uma linha por território e tipo de população,
+        ``id_tabela`` na primeira coluna e ``100_mais`` na última coluna.
+    """
+
     concat_df = pd.concat(dfs, ignore_index=True)
 
     population_by_age_group = concat_df.melt(
@@ -71,20 +102,57 @@ def table_ajust(dfs: list[pd.DataFrame]):
 
     return population_by_age_group
 
-def download_full_db(
-    url_dict:dict[str,str], 
+def loop_dowload(
+    url_dict:dict[str,str],
     download_dir: str | Path,
     schema_name:str,
     table_name:str ,
     engine: Engine,
     chunck_size: int = 50_000,
-):
+) -> None:
+    """
+    Baixa, consolida e carrega a distribuição etária do IBGE no PostgreSQL.
 
-    dfs = []
+    A função tenta baixar todos os pares ``faixa_etaria``/URL informados. Se
+    algum download falhar, ela conclui os demais downloads da rodada e depois
+    repete apenas os pares que falharam, até que todos os arquivos sejam
+    baixados com sucesso. Depois disso, lê as planilhas, monta a tabela final,
+    cria a tabela no schema informado e carrega os dados no PostgreSQL.
 
-    for range, url in url_dict.items():
-        table_path = download_sheet_from_url(url, range, download_dir, table_name, "xlsx")
-        dfs.append(read_age_range_ibge_table(table_path, range))
+    Args:
+        url_dict: Dicionário em que a chave é a faixa etária e o valor é a URL
+            da planilha correspondente.
+        download_dir: Diretório base para salvar os arquivos baixados.
+        schema_name: Schema PostgreSQL de destino.
+        table_name: Nome da tabela e prefixo dos arquivos baixados.
+        engine: Engine SQLAlchemy conectada ao PostgreSQL.
+        chunck_size: Quantidade de linhas por chunk na carga para o banco.
+    """
+
+    downloaded_paths: dict[str, Path] = {}
+    pending_downloads = url_dict.copy()
+
+    while pending_downloads:
+        failed_downloads: dict[str, str] = {}
+
+        for age_range, url in pending_downloads.items():
+            try:
+                table_path = download_sheet_from_url(url, age_range, download_dir, table_name, "xlsx")
+                downloaded_paths[age_range] = table_path
+            except Exception as error:
+                print(f"error during {age_range} data download: {error}")
+                failed_downloads[age_range] = url
+                continue
+
+        if failed_downloads:
+            print(f"trying again for {list(failed_downloads)}")
+
+        pending_downloads = failed_downloads
+
+    dfs = [
+        read_age_range_ibge_table(downloaded_paths[age_range], age_range)
+        for age_range in url_dict
+    ]
 
     final_df = table_ajust(dfs)
 
