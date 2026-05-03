@@ -25,6 +25,12 @@ def read_dwl_file(table_path: Path)-> pd.DataFrame:
 
 def table_ajust(table: pd.DataFrame, arbitrary_id_suffix: int)-> pd.DataFrame:
 
+    gender = [
+        "Total",
+        "Homens",
+        "Mulheres",
+    ]
+
     territory_column = "Brasil, Unidade da Federação e Município"
     table = table[
         ~table[territory_column].astype(str).str.startswith("Fonte:", na=False)
@@ -33,6 +39,9 @@ def table_ajust(table: pd.DataFrame, arbitrary_id_suffix: int)-> pd.DataFrame:
 
     table["id_tabela"] = (table.index.astype(str) + str(arbitrary_id_suffix)).astype(int)
     table = table[["id_tabela", *[column for column in table.columns if column != "id_tabela"]]]
+
+    for g in gender:
+        table[g]= pd.to_numeric(table[g], errors="coerce").astype(float)
     
     return table
 

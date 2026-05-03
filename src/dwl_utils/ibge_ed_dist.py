@@ -79,6 +79,10 @@ def table_ajust(df:pd.DataFrame):
         final_df["data"].dt.year.astype(str)
         + final_df.index.astype(str)
     ).astype(int)
+
+    for column in instruction_levels:
+        final_df[column] = pd.to_numeric(final_df[column], errors="coerce").astype(float)
+
     final_df = final_df[
         ["id_tabela", *[column for column in final_df.columns if column != "id_tabela"]]
     ]

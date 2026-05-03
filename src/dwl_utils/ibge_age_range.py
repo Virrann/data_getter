@@ -100,6 +100,33 @@ def table_ajust(dfs: list[pd.DataFrame]) -> pd.DataFrame:
         + ["100_mais"]
     ]
 
+    age_range = [
+        "0_4",
+        "5_9",
+        "10_14",
+        "15_19",
+        "20_24",
+        "25_29",
+        "30_34",
+        "35_30",
+        "40_44",
+        "45_49",
+        "50_54",
+        "55_59",
+        "60_64",
+        "65_69",
+        "70_74",
+        "75_79",
+        "80_84",
+        "85_89",
+        "90_94",
+        "90_95",
+        "100_mais",
+    ]
+
+    for colum in age_range:
+        population_by_age_group[colum] = pd.to_numeric(population_by_age_group[colum], errors="coerce").astype(float)
+
     return population_by_age_group
 
 def loop_dowload(
