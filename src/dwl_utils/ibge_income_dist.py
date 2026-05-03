@@ -3,7 +3,7 @@ import pandas as pd
 
 from sqlalchemy import Engine, MetaData
 
-from dwl_utils import download_sheet_from_url
+from .dwl import download_sheet_from_url
 from sql_utils import upload_dataframe_to_postgres, create_table_from_dataframe
 
 def read_dwl_file(table_path: Path)-> pd.DataFrame:
@@ -53,8 +53,10 @@ def loop_dowload(url_dict:dict[str,str],
         for range, url in pending_downloads.items():
             
             try:
+                print(f"Start dowload: {range} data")
                 table_path = download_sheet_from_url(url, range, download_dir, table_name, "xlsx")
                 downloaded_paths[range] = table_path
+                print(f"Succes on dowload: {range} data")
             
             except Exception as e:
                 print(f"error during {range} data download: {e}")
