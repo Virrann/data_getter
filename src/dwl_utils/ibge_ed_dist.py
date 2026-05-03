@@ -87,6 +87,13 @@ def table_ajust(df:pd.DataFrame):
         ["id_tabela", *[column for column in final_df.columns if column != "id_tabela"]]
     ]
 
+    final_df["Brasil, Unidade da Federação e Município"] = (
+        final_df["Brasil, Unidade da Federação e Município"]
+        .astype(str)
+        .str.replace(r"\s*\([^)]*\)", "", regex=True)
+        .str.strip()
+    )
+
     return final_df
 
 def download_full_db(
