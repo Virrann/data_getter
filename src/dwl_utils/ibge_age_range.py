@@ -6,7 +6,7 @@ from sqlalchemy import Engine, MetaData
 from dwl_utils import download_sheet_from_url
 from sql_utils import upload_dataframe_to_postgres, create_table_from_dataframe
 
-def read_age_range_ibge_table(table_path: Path, age_range: str) -> pd.DataFrame:
+def read_dwl_file(table_path: Path, age_range: str) -> pd.DataFrame:
     """
     Lê uma planilha de distribuição etária do IBGE/SIDRA.
 
@@ -56,7 +56,7 @@ def table_ajust(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     população: homens = 1, mulheres = 2 e total = 3.
 
     Args:
-        dfs: Lista de DataFrames retornados por ``read_age_range_ibge_table``.
+        dfs: Lista de DataFrames retornados por ``read_dwl_file``.
 
     Returns:
         DataFrame consolidado com uma linha por território e tipo de população,
@@ -136,9 +136,11 @@ def loop_dowload(
         failed_downloads: dict[str, str] = {}
 
         for age_range, url in pending_downloads.items():
+
             try:
                 table_path = download_sheet_from_url(url, age_range, download_dir, table_name, "xlsx")
                 downloaded_paths[age_range] = table_path
+
             except Exception as error:
                 print(f"error during {age_range} data download: {error}")
                 failed_downloads[age_range] = url
@@ -150,7 +152,7 @@ def loop_dowload(
         pending_downloads = failed_downloads
 
     dfs = [
-        read_age_range_ibge_table(downloaded_paths[age_range], age_range)
+        read_dwl_file(downloaded_paths[age_range], age_range)
         for age_range in url_dict
     ]
 
