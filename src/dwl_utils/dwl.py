@@ -61,7 +61,7 @@ def download_files_from_ftp(
     download_dir: str | Path,
     username: str = "anonymous",
     password: str = "anonymous@",
-) -> list[Path]:
+) -> list[str]:
     """
     Baixa arquivos de um diretório FTP.
 
@@ -73,7 +73,7 @@ def download_files_from_ftp(
         password: Senha FTP. Por padrão usa senha anônima convencional.
 
     Returns:
-        Lista com os caminhos locais dos arquivos baixados.
+        Lista com os nomes dos arquivos que falharam no download.
     """
 
     parsed_url = urlparse(directory_url)
@@ -88,34 +88,25 @@ def download_files_from_ftp(
     download_dir = Path(download_dir)
     download_dir.mkdir(parents=True, exist_ok=True)
 
-    downloaded_files: list[Path] = []
+    failed_downloads: list[str] = []
     with FTP(host) as ftp:
         ftp.login(user=username, passwd=password)
         if remote_dir:
             ftp.cwd(remote_dir)
-
-        failed_downloads: dict[str, str] = {}
 
         for file_name in file_names:
             file_path = download_dir / file_name
             try:
                 with file_path.open("wb") as file:
                     ftp.retrbinary(f"RETR {file_name}", file.write)
-                downloaded_files.append(file_path)
-            except Exception as error:
-                failed_downloads[file_name] = str(error)
+            except Exception:
+                failed_downloads.append(file_name)
                 if file_path.exists():
                     file_path.unlink()
                 continue
 
-    if failed_downloads:
-        failed_files = ", ".join(
-            f"{file_name} ({error})"
-            for file_name, error in failed_downloads.items()
-        )
-        raise RuntimeError(f"Failed to download FTP files: {failed_files}")
+    return failed_downloads
 
-    return downloaded_files
 
 
 def safe_read_csv(file_path: Path):
