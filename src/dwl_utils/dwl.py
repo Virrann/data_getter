@@ -1,7 +1,9 @@
+from ftplib import FTP
 from pathlib import Path
 from typing import Protocol
-import pandas as pd
+from urllib.parse import urlparse
 
+import pandas as pd
 import requests
 
 
@@ -52,6 +54,69 @@ def download_sheet_from_url(
     file_path.write_bytes(response.content)
 
     return file_path
+
+def download_files_from_ftp(
+    directory_url: str,
+    file_names: list[str],
+    download_dir: str | Path,
+    username: str = "anonymous",
+    password: str = "anonymous@",
+) -> list[Path]:
+    """
+    Baixa arquivos de um diretório FTP.
+
+    Args:
+        directory_url: URL ou caminho FTP até o diretório onde os arquivos estão.
+        file_names: Nomes dos arquivos a baixar dentro do diretório FTP.
+        download_dir: Diretório local onde os arquivos serão salvos.
+        username: Usuário FTP. Por padrão usa login anônimo.
+        password: Senha FTP. Por padrão usa senha anônima convencional.
+
+    Returns:
+        Lista com os caminhos locais dos arquivos baixados.
+    """
+
+    parsed_url = urlparse(directory_url)
+    host = parsed_url.hostname or parsed_url.path.split("/", 1)[0]
+    remote_dir = parsed_url.path if parsed_url.hostname else ""
+    if not parsed_url.hostname and "/" in parsed_url.path:
+        remote_dir = parsed_url.path.split("/", 1)[1]
+
+    if not host:
+        raise ValueError("directory_url must include an FTP host.")
+
+    download_dir = Path(download_dir)
+    download_dir.mkdir(parents=True, exist_ok=True)
+
+    downloaded_files: list[Path] = []
+    with FTP(host) as ftp:
+        ftp.login(user=username, passwd=password)
+        if remote_dir:
+            ftp.cwd(remote_dir)
+
+        failed_downloads: dict[str, str] = {}
+
+        for file_name in file_names:
+            file_path = download_dir / file_name
+            try:
+                with file_path.open("wb") as file:
+                    ftp.retrbinary(f"RETR {file_name}", file.write)
+                downloaded_files.append(file_path)
+            except Exception as error:
+                failed_downloads[file_name] = str(error)
+                if file_path.exists():
+                    file_path.unlink()
+                continue
+
+    if failed_downloads:
+        failed_files = ", ".join(
+            f"{file_name} ({error})"
+            for file_name, error in failed_downloads.items()
+        )
+        raise RuntimeError(f"Failed to download FTP files: {failed_files}")
+
+    return downloaded_files
+
 
 def safe_read_csv(file_path: Path):
     """Tenta ler como UTF-8 primeiro. Se falhar, cai para Latin-1."""
