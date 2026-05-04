@@ -93,6 +93,7 @@ def iter_csv_chunks(file_path: Path, chunk_size: int) -> Iterator[pd.DataFrame]:
             sep=";",
             encoding="utf-8",
             chunksize=chunk_size,
+            low_memory=False
         )
     except UnicodeDecodeError:
         yield from pd.read_csv(
@@ -100,6 +101,7 @@ def iter_csv_chunks(file_path: Path, chunk_size: int) -> Iterator[pd.DataFrame]:
             sep=";",
             encoding="latin1",
             chunksize=chunk_size,
+            low_memory=False
         )
 
 
