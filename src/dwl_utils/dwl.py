@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Protocol
+import pandas as pd
 
 import requests
 
@@ -51,3 +52,19 @@ def download_sheet_from_url(
     file_path.write_bytes(response.content)
 
     return file_path
+
+def safe_read_csv(file_path: Path):
+    """Tenta ler como UTF-8 primeiro. Se falhar, cai para Latin-1."""
+    try:
+        return pd.read_csv(file_path, sep=";", encoding="utf-8", low_memory=False)
+    except UnicodeDecodeError:
+        return pd.read_csv(file_path, sep=";", encoding="latin1", low_memory=False)
+    
+
+def latin1_to_utf8(value: str):
+    if not isinstance(value, str):
+        return value
+    try:
+        return value.encode("latin1").decode("utf-8")
+    except UnicodeError:
+        return value

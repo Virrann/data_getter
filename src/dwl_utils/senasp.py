@@ -132,6 +132,7 @@ def loop_download(
     download_dir: str | Path,
     schema_name: str,
     table_name: str,
+    engine: Engine,
     chunck_size: int = 50_000
 ) -> None:
     """
@@ -148,14 +149,6 @@ def loop_download(
         schema_name: Schema PostgreSQL de destino.
         table_name: Nome da tabela e prefixo dos arquivos baixados.
     """
-
-    engine = build_postgres_engine(
-        "localhost",
-        int(os.environ.get("POSTGRES_PORT", 5432)),
-        os.environ["POSTGRES_DB"],
-        os.environ["POSTGRES_USER"],
-        os.environ["POSTGRES_PASSWORD"]
-    )
     metadata = MetaData(schema=schema_name)
 
     try:

@@ -1,4 +1,4 @@
-from . import ibge_age_range, senasp
+from . import ibge_age_range, senasp, disque100
 from .dwl import download_sheet_from_url
 
 __all__ = [
