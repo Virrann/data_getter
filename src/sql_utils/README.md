@@ -11,6 +11,7 @@ from sql_utils import (
     create_table_from_dataframe,
     drop_table,
     pandas_dtype_to_sqlalchemy,
+    normalize_table_columns_by_factor,
     print_table_head,
     upload_dataframe_to_postgres,
 )
@@ -90,6 +91,21 @@ Insere o DataFrame no PostgreSQL em chunks usando `COPY`. É idempotente para os
 ### `print_table_head`
 
 Imprime as primeiras linhas de uma tabela em um schema e retorna o DataFrame consultado.
+
+### `normalize_table_columns_by_factor`
+
+Multiplica colunas numéricas diretamente no PostgreSQL usando SQLAlchemy. Colunas inteiras são truncadas e convertidas de volta para o tipo inteiro original. Aceita filtros opcionais por igualdade para limitar o `UPDATE`.
+
+```python
+normalize_table_columns_by_factor(
+    engine=engine,
+    schema_name="raw",
+    table_name="dist_instrucao",
+    columns=["Total"],
+    factor=1000,
+    filters={"Brasil, Unidade da Federação e Município": "Brasil"},
+)
+```
 
 ### `drop_table`
 

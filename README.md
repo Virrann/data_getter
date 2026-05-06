@@ -109,7 +109,7 @@ data/db_dumps/cyberchase_20260506_153000.dump
 
 ### Copiar o dump para outro computador
 
-No outro computador, copie o arquivo `.dump` para dentro deste projeto, de preferência na pasta:
+No outro computador, copie o arquivo `.dump` para dentro deste projeto, na pasta:
 
 ```text
 data/db_dumps/

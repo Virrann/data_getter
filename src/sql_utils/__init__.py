@@ -7,7 +7,9 @@ from .insert import (
 from .reed import print_table_head
 from .utils import (
     build_postgres_engine,
-    normalize_column_name)
+    normalize_column_name,
+    normalize_table_columns_by_factor,
+)
 
 __all__ = [
     "build_postgres_engine",
@@ -17,4 +19,5 @@ __all__ = [
     "print_table_head",
     "upload_dataframe_to_postgres",
     "normalize_column_name",
+    "normalize_table_columns_by_factor",
 ]
