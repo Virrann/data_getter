@@ -108,7 +108,7 @@ def table_ajust(dfs: list[pd.DataFrame]) -> pd.DataFrame:
         "20_24",
         "25_29",
         "30_34",
-        "35_30",
+        "35_39",
         "40_44",
         "45_49",
         "50_54",
@@ -120,7 +120,7 @@ def table_ajust(dfs: list[pd.DataFrame]) -> pd.DataFrame:
         "80_84",
         "85_89",
         "90_94",
-        "90_95",
+        "95_99",
         "100_mais",
     ]
 
