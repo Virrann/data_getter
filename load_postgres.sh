@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Script feito pelo Codex
+
 main() {
     set -o pipefail
 
