@@ -136,3 +136,15 @@ No computador de destino, suba o PostgreSQL do projeto com Podman ou Docker e ex
 ```
 
 Atenção: o script de load substitui o banco configurado em `POSTGRES_DB`. Ele derruba conexões abertas, remove o banco atual, cria novamente e carrega o conteúdo do dump.
+
+# ordem de exceução dos notebooks
+
+Rode em ordem para garantir que o bd seja construido sem problemas
+
+para baixar os dados: src/data_get.Ipynb
+
+normalizar: src/normalize.Ipynb
+
+contagem de casos de violência: src/SINAN_proc.Ipynb
+
+clusterização: src/clusterizing.Ipynb
